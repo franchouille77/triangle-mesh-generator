@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://franchuto77.github.io/triangle-mesh-generator/sitemap.xml
+Sitemap: https://franchouille77.github.io/triangle-mesh-generator/sitemap.xml

@@ -6,7 +6,19 @@ Generate equilateral triangle mesh patterns inside a rectangle. Configure edge l
 
 ![Triangle Mesh Generator Preview](preview.png)
 
-**[Launch the tool →](https://trianglemeshgenerator.github.io/)**
+<br>
+
+<div align="center">
+
+### 🔺 [**LAUNCH THE APP →**](https://franchuto77.github.io/triangle-mesh-generator/) 🔺
+
+[![Launch Tool](https://img.shields.io/badge/▶_OPEN_IN_BROWSER-00d4ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://franchuto77.github.io/triangle-mesh-generator/)
+
+*No install needed — runs entirely in your browser*
+
+</div>
+
+<br>
 
 ---
 

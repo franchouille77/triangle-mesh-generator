@@ -1423,15 +1423,13 @@ function exportSVG() {
   }
   // Trim right — vertical line
   if (trimRight) {
-    const y2 = trimBottom ? trimBottom.yTopEdge : H;
     const trimCol = blackLinesEnabled ? '#000000' : '#ff44ff';
-    lines.push(`  <line x1="${trimRight.xCenter.toFixed(4)}" y1="0" x2="${trimRight.xCenter.toFixed(4)}" y2="${y2}" stroke="${trimCol}" stroke-width="${strokeW}" stroke-linecap="butt"/>`);
+    lines.push(`  <line x1="${trimRight.xCenter.toFixed(4)}" y1="0" x2="${trimRight.xCenter.toFixed(4)}" y2="${H}" stroke="${trimCol}" stroke-width="${strokeW}" stroke-linecap="butt"/>`);
   }
   // Trim bottom — horizontal line
   if (trimBottom) {
-    const x2 = trimRight ? trimRight.xLeftEdge : L;
     const trimColB = blackLinesEnabled ? '#000000' : '#ff44ff';
-    lines.push(`  <line x1="0" y1="${trimBottom.yCenter.toFixed(4)}" x2="${x2}" y2="${trimBottom.yCenter.toFixed(4)}" stroke="${trimColB}" stroke-width="${strokeW}" stroke-linecap="butt"/>`);
+    lines.push(`  <line x1="0" y1="${trimBottom.yCenter.toFixed(4)}" x2="${L}" y2="${trimBottom.yCenter.toFixed(4)}" stroke="${trimColB}" stroke-width="${strokeW}" stroke-linecap="butt"/>`);
   }
   lines.push(`</svg>`);
   downloadFile(`triangle-mesh_${ts}.svg`, lines.join('\n'), 'image/svg+xml');
@@ -1487,17 +1485,15 @@ function exportDXF() {
   }
   // Trim right — vertical line
   if (trimRight) {
-    const y2 = trimBottom ? trimBottom.yTopEdge : H;
     dxf.push('0','LINE','8','TRIM_RIGHT');
     dxf.push('10',trimRight.xCenter.toFixed(4),'20',(H-0).toFixed(4),'30','0.0');
-    dxf.push('11',trimRight.xCenter.toFixed(4),'21',(H-y2).toFixed(4),'31','0.0');
+    dxf.push('11',trimRight.xCenter.toFixed(4),'21','0.0','31','0.0');
   }
   // Trim bottom — horizontal line
   if (trimBottom) {
-    const x2 = trimRight ? trimRight.xLeftEdge : L;
     dxf.push('0','LINE','8','TRIM_BOTTOM');
     dxf.push('10','0.0','20',(H-trimBottom.yCenter).toFixed(4),'30','0.0');
-    dxf.push('11',x2.toFixed(4),'21',(H-trimBottom.yCenter).toFixed(4),'31','0.0');
+    dxf.push('11',L.toFixed(4),'21',(H-trimBottom.yCenter).toFixed(4),'31','0.0');
   }
   dxf.push('0','ENDSEC','0','EOF');
   const now = new Date();
@@ -1551,8 +1547,9 @@ function computeTrimRight(d, shift, e, L) {
   // Mirror offset = distance from rect left edge to first crossing
   const mirrorOffset = firstCrossingX;   // always ≥ 0
 
-  // Last crossing such that lastCrossing + mirrorOffset + e ≤ L
-  const m = Math.floor((L - firstCrossingX - mirrorOffset - e) / halfStep);
+  // Last crossing such that lastCrossing + mirrorOffset ≤ L
+  // (the trim line can overlap outside the rectangle; only reject if fully outside)
+  const m = Math.floor((L - firstCrossingX - mirrorOffset) / halfStep);
   if (m < 0) return null;
 
   const xLeftEdge = firstCrossingX + m * halfStep + mirrorOffset;
@@ -1563,8 +1560,9 @@ function computeTrimRight(d, shift, e, L) {
 }
 
 /* ── Trim Bottom (horizontal) line computation ──
- *  The trim sits on the LAST horizontal-line axis that fits
- *  inside the rectangle (y + e/2 ≤ H).
+ *  The trim sits on the LAST horizontal-line axis whose top stroke
+ *  edge (y − e/2) is still inside the rectangle (y − e/2 ≤ H).
+ *  The trim line can overlap outside; only rejected if fully outside.
  *  Horizontal-line axes: shift.dy + k × d.
  *  yCenter = last axis  →  yTopEdge = yCenter − e/2 (clip boundary).
  */
@@ -1572,9 +1570,10 @@ function computeTrimBottom(d, shift, e, H) {
   if (e <= 0 || d <= 0) return null;
 
   // Horizontal-line axes sit at  y = shift.dy + k × d.
-  // Find the last axis whose bottom stroke edge (y + e/2) fits inside H.
+  // Find the last axis whose top stroke edge (y - e/2) is still inside H.
+  // The trim line can overlap outside the rectangle; only reject if fully outside.
   const step = d;
-  const kLast = Math.floor((H - e / 2 - shift.dy) / step);
+  const kLast = Math.floor((H + e / 2 - shift.dy) / step);
   if (kLast < 0) return null;
 
   const yCenter  = shift.dy + kLast * step;   // axis of the last horiz. line
@@ -1651,7 +1650,7 @@ function draw() {
     cutLine.setAttribute('x1', trimRightData.xCenter.toFixed(4));
     cutLine.setAttribute('y1', '0');
     cutLine.setAttribute('x2', trimRightData.xCenter.toFixed(4));
-    cutLine.setAttribute('y2', (trimBottomData ? trimBottomData.yTopEdge : H).toFixed(4));
+    cutLine.setAttribute('y2', H.toFixed(4));
     cutLine.setAttribute('stroke', blackLinesEnabled ? '#000000' : '#ff44ff');
     cutLine.setAttribute('stroke-width', strokeW);
     cutLine.setAttribute('stroke-linecap', 'butt');
@@ -1664,7 +1663,7 @@ function draw() {
     const cutLine = document.createElementNS(SVGNS, 'line');
     cutLine.setAttribute('x1', '0');
     cutLine.setAttribute('y1', trimBottomData.yCenter.toFixed(4));
-    cutLine.setAttribute('x2', (trimRightData ? trimRightData.xLeftEdge : L).toFixed(4));
+    cutLine.setAttribute('x2', L.toFixed(4));
     cutLine.setAttribute('y2', trimBottomData.yCenter.toFixed(4));
     cutLine.setAttribute('stroke', blackLinesEnabled ? '#000000' : '#ff44ff');
     cutLine.setAttribute('stroke-width', strokeW);

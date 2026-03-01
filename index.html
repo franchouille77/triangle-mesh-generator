@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triangle Mesh Generator — Free SVG & DXF Export Tool</title>
+<meta name="description" content="Free online equilateral triangle mesh generator. Configure edge length and stroke width, preview in real time, and export to SVG or DXF for laser cutting, CNC routing, and design projects.">
+<meta name="author" content="Triangle Mesh Generator">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#232a45">
+<link rel="canonical" href="https://trianglemeshgenerator.github.io/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Triangle Mesh Generator — Free SVG & DXF Export Tool">
+<meta property="og:description" content="Generate equilateral triangle mesh patterns inside a rectangle. Configure geometry, preview in real time, export to SVG & DXF. Free, no install.">
+<meta property="og:url" content="https://trianglemeshgenerator.github.io/">
+<meta property="og:image" content="https://trianglemeshgenerator.github.io/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Triangle Mesh Generator">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Triangle Mesh Generator — Free SVG & DXF Export Tool">
+<meta name="twitter:description" content="Generate equilateral triangle mesh patterns. Configure, preview, export to SVG & DXF. Free online tool for laser cutting, CNC & design.">
+<meta name="twitter:image" content="https://trianglemeshgenerator.github.io/preview.png">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 34 34'><line x1='16' y1='2' x2='30' y2='27' stroke='%23e74c3c' stroke-width='3.5' stroke-linecap='round'/><line x1='30' y1='27' x2='2' y2='27' stroke='%233498db' stroke-width='3.5' stroke-linecap='round'/><line x1='2' y1='27' x2='16' y2='2' stroke='%232ecc71' stroke-width='3.5' stroke-linecap='round'/></svg>">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Triangle Mesh Generator",
+  "url": "https://trianglemeshgenerator.github.io/",
+  "description": "Free online equilateral triangle mesh generator. Configure edge length and stroke width, preview in real time, and export to SVG or DXF for laser cutting, CNC routing, and design.",
+  "applicationCategory": "DesignApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "en",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "browserRequirements": "Requires a modern browser with SVG support",
+  "screenshot": "https://trianglemeshgenerator.github.io/preview.png",
+  "featureList": ["Real-time triangle mesh preview", "Configurable edge length and stroke width", "SVG export", "DXF export", "Screen calibration for 1:1 scale", "Pan and zoom navigation"]
+}
+</script>
+<style>
+  /* ═══════════════════════════════════════════════════════════════
+   *  CSS — Dark theme with cyan accent (#00d4ff)
+   *  ─────────────────────────────────────────────
+   *  Layout: flex column (header → info-bar → viewport → footer).
+   *  The viewport (main) fills remaining space (flex: 1).
+   *  All interactive elements share a consistent dark-blue palette.
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* Reset and base styles */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #232a45;          /* dark navy background */
+    color: #e0e0e0;               /* light gray text */
+    display: flex;
+    flex-direction: column;       /* vertical stack: header/info/viewport/footer */
+    height: 100vh;
+  }
+
+  /* ── Top toolbar ── */
+  .top-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 12px;
+    background: #1e2d50;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #3e4a60;
+    flex-shrink: 0;
+  }
+  .top-bar h1 {
+    font-size: 1.45em;
+    color: #00d4ff;
+    margin-right: 4px;
+    padding-right: 14px;
+    border-right: 1px solid #3e4a60;
+    white-space: nowrap;
+    align-self: center;
+  }
+  /* Control groups: self-contained pills that wrap as coherent blocks.
+   * Each group (Rectangle, Mesh, Offset, Trim) wraps independently
+   * on small screens instead of individual controls scattering. */
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(22,61,112,0.35);
+    border: 1px solid rgba(62,74,96,0.5);
+    border-radius: 8px;
+  }
+  /* Hide raw separators — groups provide their own visual separation */
+  .top-bar > .field-group-sep { display: none; }
+  .field-group {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .field-group-sep {
+    width: 1px;
+    height: 32px;
+    background: #3e4a60;
+    align-self: center;
+    flex-shrink: 0;
+  }
+  .field-group-label {
+    font-size: 0.62em;
+    color: #b0c4d8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    align-self: center;
+    margin-right: 2px;
+    white-space: nowrap;
+  }
+  label.field {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.72em;
+    color: #c0ccdd;
+    gap: 2px;
+  }
+  input[type="number"] {
+    padding: 6px 8px;
+    border: 1px solid #3e4a60;
+    border-radius: 5px;
+    background: #163d70;
+    color: #fff;
+    font-size: 1em;
+    width: 90px;
+    height: 34px;
+    transition: border-color 0.15s;
+  }
+  input[type="number"]:focus { outline: none; border-color: #00d4ff; box-shadow: 0 0 0 2px rgba(0,212,255,0.15); }
+  /* Larger spin buttons for easier clicking */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 30px;
+    width: 18px;
+    cursor: pointer;
+  }
+
+
+  /* ── Info bar (computed values displayed below the toolbar) ── */
+  .info-bar {
+    padding: 5px 20px;
+    background: #192640;
+    font-size: 0.72em;
+    line-height: 1.7;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .info-bar strong { color: #00d4ff; }           /* parameter labels */
+  .info-bar .computed { color: #ffaa00; }         /* computed values (d, h_int, etc.) */
+  .legend { display: inline-block; width: 12px; height: 3px; vertical-align: middle; margin-right: 3px; border-radius: 2px; } /* colored legend boxes for each family */
+
+  /* ── SVG viewport (main drawing area) ── */
+  .svg-viewport {
+    flex: 1;                      /* fills all remaining vertical space */
+    position: relative;           /* anchor for HUD overlays */
+    overflow: hidden;
+    background: #ffffff;          /* white canvas background */
+    cursor: grab;                 /* indicates pan is available */
+    touch-action: none;           /* prevent browser pan/zoom on touch */
+  }
+  .svg-viewport.grabbing { cursor: grabbing; }
+  .svg-viewport svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+  }
+  .svg-viewport svg line.pattern:hover {
+    stroke-opacity: 0.35;
+    cursor: crosshair;
+  }
+  /* Non-scaling rectangle outline — always 1px on screen regardless of zoom */
+  .rect-outline {
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Dimension annotations (rectangle + mesh gauges)
+   * Initially invisible (opacity: 0), shown via .show class.
+   * pointer-events: none so they don't block pan/drag. */
+  #dimAnnotations, #meshDimAnnotations { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+  #dimAnnotations.show, #meshDimAnnotations.show { opacity: 1; }
+
+  /* ── HUD (heads-up display) — buttons and info overlays ── */
+  .hud-tr {
+    position: absolute; top: 10px; right: 14px;
+    display: flex; flex-direction: column; gap: 5px;
+    z-index: 10;
+  }
+  .hud-sep {
+    height: 1px;
+    background: rgba(0,212,255,0.2);
+    margin: 3px 0;
+  }
+  .hud-btn {
+    background: #1e2d50;
+    color: #00d4ff;
+    border: 1px solid #00d4ff;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.78em;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .hud-btn:hover { background: #00d4ff; color: #000; }
+  .hud-btn:focus-visible { outline: 2px solid #00d4ff; outline-offset: 2px; }
+  .hud-btn.active { background: #00d4ff; color: #000; font-weight: 700; }
+
+  .zoom-hud {
+    position: absolute;
+    bottom: 10px; right: 14px;
+    background: rgba(30,45,80,0.92);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.76em;
+    color: #aaa;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .zoom-hud strong { color: #00d4ff; }
+
+  .nav-help {
+    position: absolute;
+    bottom: 10px; left: 14px;
+    background: rgba(21,30,53,0.92);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.72em;
+    color: #7b8fa8;
+    pointer-events: none;
+    z-index: 10;
+    line-height: 1.6;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .nav-help kbd {
+    background: #2a3a55;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #b0c4d8;
+    font-size: 0.92em;
+    border: 1px solid #3e4a60;
+  }
+
+  /* ── Calibration overlay ──
+   * Full-screen dark backdrop with a centered card.
+   * Contains a 5mm grid canvas, DPI slider, and Apply/Cancel buttons.
+   * The canvas draws ruler markings outside the white grid area. */
+  .calib-overlay {
+    display: none;                /* hidden by default, shown via .show */
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85); /* dark semi-transparent backdrop */
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #e0e0e0;
+    font-size: 0.9em;
+  }
+  .calib-overlay.show { display: flex; }
+  .calib-card {
+    background: #1e2d50;
+    border: 1px solid #00d4ff33;
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 40px rgba(0,212,255,0.10), 0 0 0 1px rgba(0,212,255,0.06);
+    width: 80vw;
+    height: 80vh;
+    max-width: 1000px;
+    max-height: 750px;
+    min-width: 320px;
+    min-height: 300px;
+    overflow: hidden;
+  }
+  .calib-card h2 {
+    color: #00d4ff;
+    font-size: 1.25em;
+    margin: 0;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+  .calib-card > p {
+    margin: 0;
+    color: #b0c4d8;
+    font-size: 0.82em;
+    text-align: center;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+  .calib-card > p strong { color: #00d4ff; }
+  .calib-grid-area {
+    flex: 1;                      /* fills remaining card space between text and controls */
+    min-height: 0;                /* allow flex shrink below content size */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .calib-grid-area canvas {
+    display: block;
+    background: transparent;      /* transparent so ruler labels (drawn on canvas margin) are visible against dark card */
+  }
+  .calib-bottom {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .calib-grid-label {
+    font-size: 0.72em;
+    color: #7b8fa8;
+    text-align: center;
+  }
+  .calib-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .calib-controls span { color: #8899aa; font-size: 0.88em; }
+  .calib-dpi-input {
+    width: 62px;
+    padding: 3px 6px;
+    border: 1px solid #00d4ff;
+    border-radius: 4px;
+    background: #163d70;
+    color: #fff;
+    font-size: 0.95em;
+    text-align: center;
+  }
+  .calib-dpi-input:focus { outline: none; border-color: #00d4ff; }
+  .calib-slider {
+    width: min(400px, 50vw);
+    accent-color: #00d4ff;
+  }
+  .calib-btns { display: flex; gap: 14px; }
+  .calib-btns button {
+    padding: 7px 22px;
+    border-radius: 6px;
+    border: 1px solid #3e4a60;
+    background: #1e2d50;
+    color: #8899aa;
+    cursor: pointer;
+    font-size: 0.85em;
+    letter-spacing: 0.03em;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .calib-btns button:hover { border-color: #00d4ff; color: #00d4ff; }
+  .calib-btns button.primary {
+    border-color: #00d4ff;
+    background: #00d4ff;
+    color: #000;
+    font-weight: 600;
+  }
+  .calib-btns button.primary:hover { background: #33ddff; }
+
+  /* ── About popover — info panel shown when clicking the About button ── */
+  .about-popover {
+    display: none;
+    position: absolute;
+    top: 10px; left: 14px;
+    width: 370px;
+    background: #1e2d50;
+    border: 1px solid #3e4a60;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,212,255,0.08);
+    z-index: 200;
+    font-size: 0.82em;
+    line-height: 1.55;
+    color: #b8c8d8;
+    animation: aboutFadeIn 0.15s ease;
+  }
+  .about-popover.show { display: block; }
+  @keyframes aboutFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .about-popover h3 { color: #00d4ff; font-size: 1.05em; margin-bottom: 8px; font-weight: 600; }
+  .about-popover p { margin-bottom: 8px; }
+  .about-popover ul { margin: 6px 0 10px 18px; padding: 0; }
+  .about-popover li { margin-bottom: 3px; }
+  .about-popover .about-close {
+    position: absolute; top: 8px; right: 10px;
+    background: none; border: none; color: #5a7a9a; font-size: 1.2em;
+    cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    transition: color 0.15s;
+  }
+  .about-popover .about-close:hover { color: #00d4ff; }
+
+  /* ── Offset / toggle buttons — reused for Auto offset, Trim, Gauges, Black lines ── */
+  .offset-btn {
+    padding: 0 10px;
+    border: 1px solid rgba(0,212,255,0.40);
+    border-radius: 5px;
+    background: rgba(0,212,255,0.12);
+    color: #00d4ff;
+    font-size: 0.72em;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 34px;
+    letter-spacing: 0.02em;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .offset-btn:hover { border-color: #00d4ff; background: rgba(0,212,255,0.22); color: #fff; }
+  .offset-btn:active { background: #00d4ff; color: #000; }
+  .offset-btn.active { background: rgba(0,212,255,0.25); border-color: #00d4ff; color: #fff; box-shadow: 0 0 6px rgba(0,212,255,0.3); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NOSCRIPT — fallback content for users with JS disabled.
+     Provides SEO-visible text and a friendly message.
+     ═══════════════════════════════════════════════════════════════ -->
+<noscript>
+  <div style="padding:40px;text-align:center;font-family:sans-serif;background:#232a45;color:#e0e0e0;min-height:100vh;">
+    <h1 style="color:#00d4ff;">Triangle Mesh Generator</h1>
+    <p>Free online equilateral triangle mesh generator for laser cutting, CNC routing, and parametric design.</p>
+    <p>Configure edge length and stroke width, preview in real time, and export to SVG or DXF.</p>
+    <p style="margin-top:20px;color:#888;">This application requires JavaScript to run. Please enable JavaScript in your browser.</p>
+  </div>
+</noscript>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TOOLBAR — parameter controls grouped in pill-shaped containers.
+     Groups: Logo/About | Rectangle (W,H,📐) | Mesh (c,e,📐) |
+             Origin offset (Auto/No/dx/dy) | Trim/Black lines
+     ═══════════════════════════════════════════════════════════════ -->
+<header class="top-bar">
+  <!-- Logo + title -->
+  <h1><svg width="46" height="46" viewBox="-6 -6 44 42" style="vertical-align:-10px;margin-right:10px;"><polygon points="16,-5 37,31.5 -5,31.5" fill="white" stroke="white" stroke-width="3.5" stroke-linejoin="round"/><line x1="16" y1="2" x2="30" y2="27" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="27" x2="2" y2="27" stroke="#3498db" stroke-width="3.5" stroke-linecap="round"/><line x1="2" y1="27" x2="16" y2="2" stroke="#2ecc71" stroke-width="3.5" stroke-linecap="round"/></svg>Triangle Mesh Generator</h1>
+  <!-- About button (opens popover) -->
+  <button id="aboutBtn" title="About this tool" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.78em;font-weight:500;cursor:pointer;padding:4px 12px 4px 9px;align-self:center;margin-left:2px;margin-right:2px;border-radius:14px;letter-spacing:0.03em;transition:color 0.15s,background 0.15s,border-color 0.15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;" onmouseover="this.style.color='#fff';this.style.background='rgba(0,212,255,0.28)';this.style.borderColor='rgba(0,212,255,0.7)'" onmouseout="this.style.color='#00d4ff';this.style.background='rgba(0,212,255,0.12)';this.style.borderColor='rgba(0,212,255,0.4)'"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="8.5" width="2" height="6" rx="1" fill="currentColor"/><circle cx="10" cy="5.8" r="1.2" fill="currentColor"/></svg>About</button>
+  <div class="field-group-sep"></div>
+
+  <!-- Rectangle parameters: Width (L) and Height (H) in mm -->
+  <div class="ctrl-group" id="rectSection">
+    <span class="field-group-label">Rectangle</span>
+    <div class="field-group">
+      <label class="field"><span>Width (mm)</span><input id="inL" type="number" value="2000" min="1" step="1"></label>
+      <label class="field"><span>Height (mm)</span><input id="inH" type="number" value="1200" min="1" step="1"></label>
+    </div>
+    <button id="rectGaugeBtn" class="offset-btn" title="Show rectangle dimension gauges">📐</button>
+  </div>
+  <div class="field-group-sep"></div>
+
+  <!-- Mesh parameters: Edge length (c) and Stroke width (e) in mm -->
+  <div class="ctrl-group" id="meshSection">
+    <span class="field-group-label">Mesh</span>
+    <div class="field-group">
+      <label class="field"><span>Edge length (mm)</span><input id="inC" type="number" value="150" min="0.1" step="0.5"></label>
+      <label class="field"><span>Stroke width (mm)</span><input id="inE" type="number" value="4" min="0" step="0.1"></label>
+    </div>
+    <button id="meshGaugeBtn" class="offset-btn" title="Show mesh dimension gauges">📐</button>
+  </div>
+  <div class="field-group-sep"></div>
+
+  <div class="ctrl-group">
+    <span class="field-group-label">Origin offset</span>
+    <button id="offsetAutoBtn" class="offset-btn" title="Apply the auto-calculated tangency offset">Auto offset</button>
+    <button id="offsetZeroBtn" class="offset-btn" title="Remove offset — mesh starts at the corner">No offset</button>
+    <label class="field"><span>dx (mm)</span><input id="inDx" type="number" value="0" step="0.1" style="width:80px;"></label>
+    <label class="field"><span>dy (mm)</span><input id="inDy" type="number" value="0" step="0.1" style="width:80px;"></label>
+  </div>
+  <div class="field-group-sep"></div>
+
+  <!-- Trim toggles and black lines mode -->
+  <div class="ctrl-group">
+    <button id="trimRightBtn" class="offset-btn" title="Trim right — vertical cut so the last triangle mirrors the first half-triangle">✂ Trim right</button>
+    <button id="trimBottomBtn" class="offset-btn" title="Trim bottom — horizontal cut so the last row mirrors the first partial row">✂ Trim bottom</button>
+    <button id="blackLinesBtn" class="offset-btn" title="Draw all mesh lines in black">⬛ Black lines</button>
+  </div>
+</header>
+
+<!-- ── Info bar: dynamically filled by draw() with computed values ── -->
+<div class="info-bar" id="info" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SVG VIEWPORT — main drawing area.
+     Contains: SVG canvas, HUD buttons (fit/1:1/calibrate/export),
+     zoom/scale readout, navigation help, About popover, and
+     calibration overlay.
+     ═══════════════════════════════════════════════════════════════ -->
+<main class="svg-viewport" id="viewport" role="application" aria-label="Triangle mesh preview">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <!-- HUD: view controls and export buttons (top-right corner) -->
+  <div class="hud-tr">
+    <button class="hud-btn" id="fitBtn" aria-label="Fit view to content">⊞ Fit</button>
+    <button class="hud-btn" id="realBtn" aria-label="1:1 actual size scale">📏 1:1 Scale</button>
+    <button class="hud-btn" id="calibBtn" aria-label="Calibrate screen DPI">⚙ Calibrate</button>
+    <div class="hud-sep"></div>
+    <button class="hud-btn" id="exportSvgBtn" aria-label="Export as SVG file">💾 SVG</button>
+    <button class="hud-btn" id="exportDxfBtn" aria-label="Export as DXF file">💾 DXF</button>
+  </div>
+
+  <!-- Zoom/scale readout (bottom-right, non-interactive) -->
+  <div class="zoom-hud" id="zoomHud">Zoom: <strong>×1.00</strong> &nbsp; <span id="scaleInfo"></span></div>
+
+  <!-- Navigation help (bottom-left, non-interactive) -->
+  <div class="nav-help">
+    <kbd>Scroll</kbd> Zoom &nbsp; <kbd>Shift+Scroll</kbd> Pan H &nbsp; <kbd>Ctrl+Scroll</kbd> Pan V &nbsp; <kbd>Drag</kbd> Pan &nbsp; <kbd>Dbl-click</kbd> Fit
+  </div>
+
+  <!-- About popover -->
+  <div class="about-popover" id="aboutPopover">
+    <button class="about-close" id="aboutClose" title="Close">&times;</button>
+    <h3>About Triangle Mesh Generator</h3>
+    <p>A lightweight, browser-based tool for generating <strong>equilateral triangle mesh patterns</strong> inside a rectangle. Designed for precision work in laser cutting, CNC routing, architectural panels, and graphic design.</p>
+    <ul>
+      <li>Real-time preview with SVG rendering</li>
+      <li>Configurable edge length &amp; stroke width</li>
+      <li>Export to <strong>SVG</strong> and <strong>DXF</strong></li>
+      <li>Screen calibration for true 1:1 scale</li>
+      <li>Pan, zoom &amp; fit navigation</li>
+    </ul>
+    <p style="color:#5a7a9a;font-size:0.9em;margin-bottom:0;">No install required — runs entirely in your browser. Zero dependencies.</p>
+  </div>
+
+  <!-- Calibration overlay -->
+  <div class="calib-overlay" id="calibOverlay">
+    <div class="calib-card">
+      <h2>📏 Screen Calibration</h2>
+      <p>Adjust the slider until the grid matches real-world measurements.<br>Place a physical ruler against the display. Each small square = <strong>5 mm</strong>.</p>
+      <div class="calib-grid-area">
+        <canvas id="calibGrid"></canvas>
+      </div>
+      <div class="calib-bottom">
+        <div class="calib-grid-label">5 mm grid — bold lines every cm</div>
+        <div class="calib-controls">
+          <span>DPI:</span>
+          <input type="range" class="calib-slider" id="calibSlider" min="50" max="300" step="1" value="96">
+          <input type="number" class="calib-dpi-input" id="calibDpiVal" min="50" max="300" step="1" value="96">
+        </div>
+        <div class="calib-btns">
+          <button id="calibCancel">Cancel</button>
+          <button id="calibApply" class="primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── Footer: SEO-visible keyword-rich description ── -->
+<footer style="padding:8px 20px;background:#151e35;font-size:0.68em;line-height:1.5;color:#7b8fa8;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+  <span>Triangle Mesh Generator — Free online equilateral triangle mesh generator. Configure edge length &amp; stroke width, export to SVG or DXF for laser cutting, CNC &amp; design. No install required.</span>
+</footer>
+
+<script>
+/*
+ * ══════════════════════════════════════════════════════════════════════
+ *  TRIANGLE MESH GENERATOR — Single-file HTML/SVG/JS application
+ * ══════════════════════════════════════════════════════════════════════
+ *
+ *  Goal: Generate an equilateral triangle mesh inside a rectangle
+ *        L × H (in mm) by drawing 3 families of parallel lines
+ *        at 0°, +60° and −60°.
+ *
+ *  Key principle — stroke thickness compensation:
+ *  ───────────────────────────────────────────────
+ *  The value "c" entered by the user is the INNER SIDE of the triangle,
+ *  i.e. the distance measured between the inner edges of the lines
+ *  that form it — NOT between their axes.
+ *
+ *  Inter-axis spacing formula:
+ *
+ *      d = c × √3/2 + 3e/2
+ *
+ *  where  c = inner side of the triangle (mm),
+ *         e = stroke thickness (mm),
+ *         d = perpendicular distance between consecutive axes
+ *             of the same family.
+ *
+ *  Why: each side of the inner triangle is formed by the inner edge
+ *  of a line. The 3 inner edges recede by e/2 perpendicularly.
+ *  The inner triangle height is therefore h = d − 3e/2 (not d − e),
+ *  because the opposite vertex, intersection of two non-perpendicular
+ *  inner edges (at 60°), drops by e (not e/2). Thus:
+ *     h = c × √3/2 = d − 3e/2   ⟹   d = c × √3/2 + 3e/2
+ *
+ *  Geometry reminders:
+ *  • Height of an equilateral triangle with side c: h = c × √3/2
+ *  • 3 families at 60° apart tile the plane with equilateral triangles
+ *  • Horizontal cross-section at a diagonal intersection: 2e/√3
+ *
+ *  File architecture:
+ *  ───────────────────
+ *  1. CSS   — dark theme, top bar, SVG viewport, HUD, overlay
+ *  2. HTML  — input bar, info-bar, SVG viewport, calibration
+ *  3. JS    — DPI calibration, viewbox/pan/zoom, Cohen-Sutherland clipping,
+ *             geometry (spacing, auto offset, families), SVG rendering
+ *
+ *  Self-contained (no dependencies), works with file://.
+ * ══════════════════════════════════════════════════════════════════════
+ */
+
+/* ── DOM References ── */
+const inputL = document.getElementById('inL');
+const inputH = document.getElementById('inH');
+const inputC = document.getElementById('inC');
+const inputE = document.getElementById('inE');
+const offsetAutoBtn = document.getElementById('offsetAutoBtn');
+const offsetZeroBtn = document.getElementById('offsetZeroBtn');
+const inputDx = document.getElementById('inDx');
+const inputDy = document.getElementById('inDy');
+const trimRightBtn = document.getElementById('trimRightBtn');
+const trimBottomBtn = document.getElementById('trimBottomBtn');
+const rectGaugeBtn = document.getElementById('rectGaugeBtn');
+const meshGaugeBtn = document.getElementById('meshGaugeBtn');
+const blackLinesBtn = document.getElementById('blackLinesBtn');
+const infoPanel = document.getElementById('info');
+const viewport = document.getElementById('viewport');
+const svg = document.getElementById('svg');
+const zoomHud = document.getElementById('zoomHud');
+const scaleInfo = document.getElementById('scaleInfo');
+const fitBtn = document.getElementById('fitBtn');
+const realBtn = document.getElementById('realBtn');
+const aboutBtn = document.getElementById('aboutBtn');
+const aboutPopover = document.getElementById('aboutPopover');
+const aboutClose = document.getElementById('aboutClose');
+const calibBtn = document.getElementById('calibBtn');
+const calibOverlay = document.getElementById('calibOverlay');
+const calibSlider = document.getElementById('calibSlider');
+const calibDpiVal = document.getElementById('calibDpiVal');
+const calibCancel = document.getElementById('calibCancel');
+const calibApply = document.getElementById('calibApply');
+const calibGrid = document.getElementById('calibGrid');
+const exportSvgBtn = document.getElementById('exportSvgBtn');
+const exportDxfBtn = document.getElementById('exportDxfBtn');
+
+/* ── Constants ── */
+const SQRT3 = Math.sqrt(3);              // √3 ≈ 1.7320508…
+const SVGNS = 'http://www.w3.org/2000/svg'; // SVG namespace
+
+/* ══════════════════════════════════════════════════════════════════
+ *  DPI / Screen Calibration
+ *  ─────────────────────────
+ *  To display the mesh at true 1:1 scale ("actual size"),
+ *  the physical screen resolution in DPI must be known.
+ *  The default (96 × devicePixelRatio) is approximate;
+ *  the user can correct it via the calibration overlay which
+ *  shows a 10 cm ruler and a 5 mm grid.
+ * ══════════════════════════════════════════════════════════════════ */
+let screenDPI = 96;
+function guessPhysicalDPI() {
+  return 96 * (window.devicePixelRatio || 1);
+}
+screenDPI = guessPhysicalDPI();
+calibSlider.value = Math.round(screenDPI);
+calibDpiVal.value = Math.round(screenDPI);
+
+/* Update the calibration grid canvas.
+ * Reads the current DPI from the slider and redraws the 5 mm grid
+ * with cm ruler markings placed outside the white grid area.
+ * Pixel dimensions are recomputed from the selected DPI. */
+function updateCalibRuler() {
+  const dpi = parseFloat(calibSlider.value);
+  drawCalibGrid(dpi);
+}
+
+/* Verification grid: 5 mm squares, fills the grid-area container.
+ * The white grid occupies most of the canvas; a margin on the top
+ * and left is reserved for cm-numbered ruler labels (drawn in the
+ * dialog theme color). Cols/rows are computed dynamically so the
+ * grid fills whatever space the container provides.
+ *
+ * Canvas layout:
+ *  ┌─────┬────────────┐
+ *  │     │ 1  2  3  ... │  ← top ruler (cm labels)
+ *  ├─────┼────────────┤
+ *  │  1  │              │
+ *  │  2  │  white grid  │
+ *  │  .  │  (5mm cells) │
+ *  │  .  │              │
+ *  └─────┴────────────┘
+ *    ↑ left ruler
+ */
+function drawCalibGrid(dpi) {
+  const pxPerMm = dpi / 25.4;
+  const cellPx = 5 * pxPerMm; // 5 mm per cell
+
+  // Font size for ruler labels
+  const fontSize = Math.max(9, Math.round(cellPx * 0.55));
+  // Margin reserved for rulers (left for vertical, top for horizontal)
+  const margin = Math.round(fontSize * 1.8);
+
+  // Measure available space in the grid-area container
+  const wrap = calibGrid.parentElement;
+  const availW = wrap.clientWidth - 4;
+  const availH = wrap.clientHeight - 4;
+  const maxW = Math.max(100, availW);
+  const maxH = Math.max(100, availH);
+
+  // Grid fits in the space after subtracting ruler margins
+  const cols = Math.max(4, Math.floor((maxW - margin) / cellPx));
+  const rows = Math.max(3, Math.floor((maxH - margin) / cellPx));
+  const gridW = Math.round(cols * cellPx);
+  const gridH = Math.round(rows * cellPx);
+  const totalW = margin + gridW;
+  const totalH = margin + gridH;
+  calibGrid.width = totalW;
+  calibGrid.height = totalH;
+  const ctx = calibGrid.getContext('2d');
+
+  // Transparent background, then white grid area with border
+  ctx.clearRect(0, 0, totalW, totalH);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(margin, margin, gridW, gridH);
+  ctx.strokeStyle = '#3e4a60';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(margin + 0.5, margin + 0.5, gridW - 1, gridH - 1);
+
+  // Grid lines (offset by margin)
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= cols; i++) {
+    const x = margin + Math.round(i * cellPx) + 0.5;
+    const isCm = (i * 5) % 10 === 0;
+    ctx.strokeStyle = isCm ? '#000000' : '#555555';
+    ctx.beginPath(); ctx.moveTo(x, margin); ctx.lineTo(x, margin + gridH); ctx.stroke();
+  }
+  for (let j = 0; j <= rows; j++) {
+    const y = margin + Math.round(j * cellPx) + 0.5;
+    const isCm = (j * 5) % 10 === 0;
+    ctx.strokeStyle = isCm ? '#000000' : '#555555';
+    ctx.beginPath(); ctx.moveTo(margin, y); ctx.lineTo(margin + gridW, y); ctx.stroke();
+  }
+
+  // Cm rulers outside the grid
+  ctx.fillStyle = '#b0c4d8';
+  ctx.font = `bold ${fontSize}px sans-serif`;
+
+  // Top ruler (above the grid)
+  ctx.textBaseline = 'bottom';
+  ctx.textAlign = 'center';
+  for (let i = 0; i <= cols; i++) {
+    if ((i * 5) % 10 === 0 && i > 0) {
+      const cm = (i * 5) / 10;
+      ctx.fillText(cm, margin + Math.round(i * cellPx), margin - 3);
+    }
+  }
+
+  // Left ruler (left of the grid)
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'right';
+  for (let j = 0; j <= rows; j++) {
+    if ((j * 5) % 10 === 0 && j > 0) {
+      const cm = (j * 5) / 10;
+      ctx.fillText(cm, margin - 4, margin + Math.round(j * cellPx));
+    }
+  }
+}
+
+calibSlider.addEventListener('input', () => {
+  calibDpiVal.value = calibSlider.value;
+  updateCalibRuler();
+});
+
+calibDpiVal.addEventListener('input', () => {
+  const v = Math.min(300, Math.max(50, parseInt(calibDpiVal.value) || 96));
+  calibSlider.value = v;
+  updateCalibRuler();
+});
+
+/* ── About popover toggle ──
+ * Click on About button toggles the popover.
+ * Click outside or on × button closes it.
+ * Escape key also closes it (handled in keydown listener below). */
+aboutBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  aboutPopover.classList.toggle('show');
+});
+aboutClose.addEventListener('click', () => aboutPopover.classList.remove('show'));
+document.addEventListener('click', (e) => {
+  if (!aboutPopover.contains(e.target) && e.target !== aboutBtn) {
+    aboutPopover.classList.remove('show');
+  }
+});
+
+/* ── Calibration dialog open/close ──
+ * Important: the overlay is shown BEFORE measuring the grid container,
+ * with requestAnimationFrame to ensure the browser has reflowed and
+ * the container has real dimensions (not 0 from display:none). */
+calibBtn.addEventListener('click', () => {
+  calibSlider.value = Math.round(screenDPI);
+  calibDpiVal.value = Math.round(screenDPI);
+  calibOverlay.classList.add('show');
+  // Wait for reflow so the container has real dimensions before drawing
+  requestAnimationFrame(() => updateCalibRuler());
+});
+
+calibCancel.addEventListener('click', () => {
+  calibOverlay.classList.remove('show');
+});
+
+calibApply.addEventListener('click', () => {
+  screenDPI = parseFloat(calibSlider.value);
+  calibOverlay.classList.remove('show');
+  applyViewBox(); // refresh scale info
+});
+
+/* Calibration keyboard shortcuts: Enter = Apply, Escape = Cancel */
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && aboutPopover.classList.contains('show')) {
+    aboutPopover.classList.remove('show');
+    return;
+  }
+  if (!calibOverlay.classList.contains('show')) return;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    calibApply.click();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    calibCancel.click();
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════
+ *  SVG ViewBox management (pan & zoom)
+ *  ─────────────────────────────────────
+ *  The SVG uses a viewBox expressed directly in mm.
+ *  vb = { x, y, w, h } defines the visible window (in mm).
+ *  Zoom is achieved by modifying vb.w / vb.h (smaller = more zoomed).
+ *  Pan shifts vb.x / vb.y.
+ * ══════════════════════════════════════════════════════════════════ */
+let vb = { x: 0, y: 0, w: 2000, h: 1200 };
+let rectL = 2000, rectH = 1200;
+let isRealSize = false;
+
+function mmPerPxCSS() {
+  // 1 CSS px = 25.4 / screenDPI mm (physical)
+  // Viewport dimensions are in CSS px, so:
+  return 25.4 / screenDPI;
+}
+
+function applyViewBox() {
+  svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+
+  const vpRect = viewport.getBoundingClientRect();
+  const mmPerPx = vb.w / vpRect.width; // how many mm per CSS pixel
+  const realMmPerPx = mmPerPxCSS();
+  const scaleRatio = realMmPerPx / mmPerPx; // >1 means displayed bigger than real
+
+  const zoomLevel = rectL / vb.w;
+  zoomHud.innerHTML = `Zoom: <strong>×${zoomLevel.toFixed(2)}</strong> &nbsp; ` +
+    `Scale: <strong>${scaleRatio < 1 ? '1:' + (1/scaleRatio).toFixed(1) : scaleRatio.toFixed(1) + ':1'}</strong>` +
+    (Math.abs(scaleRatio - 1) < 0.02 ? ' ✅ 1:1' : '');
+
+  realBtn.classList.toggle('active', isRealSize);
+}
+
+function fitAll() {
+  isRealSize = false;
+  const margin = Math.max(rectL, rectH) * 0.06;
+  const vpRect = viewport.getBoundingClientRect();
+  const aspect = vpRect.width / vpRect.height;
+  let w = rectL + margin * 2;
+  let h = rectH + margin * 2;
+  if (w / h > aspect) { h = w / aspect; }
+  else { w = h * aspect; }
+  vb.x = -margin - (w - rectL - margin * 2) / 2;
+  vb.y = -margin - (h - rectH - margin * 2) / 2;
+  vb.w = w;
+  vb.h = h;
+  applyViewBox();
+}
+
+function setRealSize() {
+  isRealSize = true;
+  const vpRect = viewport.getBoundingClientRect();
+  const realW_mm = vpRect.width * mmPerPxCSS();
+  const realH_mm = vpRect.height * mmPerPxCSS();
+
+  // Center on the rectangle
+  const cx = rectL / 2;
+  const cy = rectH / 2;
+  vb.w = realW_mm;
+  vb.h = realH_mm;
+  vb.x = cx - realW_mm / 2;
+  vb.y = cy - realH_mm / 2;
+  applyViewBox();
+}
+
+/* ── Pan & Zoom ── */  
+function pxToVB(pxX, pxY) {
+  const r = viewport.getBoundingClientRect();
+  return { x: pxX * vb.w / r.width, y: pxY * vb.h / r.height };
+}
+function mouseToVB(e) {
+  const r = viewport.getBoundingClientRect();
+  return { x: vb.x + ((e.clientX - r.left) / r.width) * vb.w,
+           y: vb.y + ((e.clientY - r.top) / r.height) * vb.h };
+}
+
+viewport.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  isRealSize = false;
+
+  if (e.shiftKey) {
+    // Shift + scroll → horizontal pan
+    const panAmt = pxToVB(e.deltaY * 2, 0);
+    vb.x += panAmt.x;
+    applyViewBox();
+    return;
+  }
+  if (e.ctrlKey) {
+    // Ctrl + scroll → vertical pan
+    const panAmt = pxToVB(0, e.deltaY * 2);
+    vb.y += panAmt.y;
+    applyViewBox();
+    return;
+  }
+
+  const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+  const m = mouseToVB(e);
+  vb.x = m.x - (m.x - vb.x) * factor;
+  vb.y = m.y - (m.y - vb.y) * factor;
+  vb.w *= factor;
+  vb.h *= factor;
+  applyViewBox();
+}, { passive: false });
+
+// Prevent browser native drag of SVG elements (text, lines, images)
+viewport.addEventListener('dragstart', (e) => e.preventDefault());
+
+let isPanning = false, panStart = {}, vbStart = {};
+viewport.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('.hud-tr') || e.target.closest('.calib-overlay') || e.target.closest('.about-popover')) return;
+  if (e.button !== 0) return;
+  isPanning = true;
+  panStart = { x: e.clientX, y: e.clientY };
+  vbStart = { x: vb.x, y: vb.y };
+  viewport.classList.add('grabbing');
+  viewport.setPointerCapture(e.pointerId);
+});
+window.addEventListener('pointermove', (e) => {
+  if (!isPanning) return;
+  const d = pxToVB(e.clientX - panStart.x, e.clientY - panStart.y);
+  vb.x = vbStart.x - d.x;
+  vb.y = vbStart.y - d.y;
+  applyViewBox();
+});
+function stopPan() {
+  isPanning = false;
+  viewport.classList.remove('grabbing');
+}
+window.addEventListener('pointerup', stopPan);
+window.addEventListener('pointercancel', stopPan);
+window.addEventListener('blur', stopPan);
+document.addEventListener('visibilitychange', stopPan);
+viewport.addEventListener('dblclick', (e) => {
+  if (e.target.closest('.hud-tr') || e.target.closest('.calib-overlay') || e.target.closest('.about-popover')) return;
+  e.preventDefault();
+  fitAll();
+});
+
+fitBtn.addEventListener('click', fitAll);
+realBtn.addEventListener('click', setRealSize);
+
+/* ══════════════════════════════════════════════════════════════════
+ *  Clipping — Cohen-Sutherland algorithm
+ *  ───────────────────────────────────────
+ *  Each line is extended well beyond the rectangle then
+ *  clipped to [0, 0] → [L, H]. This avoids drawing invisible
+ *  segments and ensures clean endpoints.
+ * ══════════════════════════════════════════════════════════════════ */
+const INSIDE=0,LEFT=1,RIGHT=2,BOTTOM=4,TOP=8;
+function outcode(x,y,xmin,ymin,xmax,ymax){
+  let c=INSIDE;
+  if(x<xmin)c|=LEFT;else if(x>xmax)c|=RIGHT;
+  if(y<ymin)c|=BOTTOM;else if(y>ymax)c|=TOP;
+  return c;
+}
+function clipLine(x0,y0,x1,y1,xmin,ymin,xmax,ymax){
+  let c0=outcode(x0,y0,xmin,ymin,xmax,ymax);
+  let c1=outcode(x1,y1,xmin,ymin,xmax,ymax);
+  while(true){
+    if(!(c0|c1))return{x1:x0,y1:y0,x2:x1,y2:y1};
+    if(c0&c1)return null;
+    let co=c0||c1,x,y;
+    if(co&TOP){x=x0+(x1-x0)*(ymax-y0)/(y1-y0);y=ymax;}
+    else if(co&BOTTOM){x=x0+(x1-x0)*(ymin-y0)/(y1-y0);y=ymin;}
+    else if(co&RIGHT){y=y0+(y1-y0)*(xmax-x0)/(x1-x0);x=xmax;}
+    else{y=y0+(y1-y0)*(xmin-x0)/(x1-x0);x=xmin;}
+    if(co===c0){x0=x;y0=y;c0=outcode(x0,y0,xmin,ymin,xmax,ymax);}
+    else{x1=x;y1=y;c1=outcode(x1,y1,xmin,ymin,xmax,ymax);}
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ *  Mesh geometry
+ *  ──────────────
+ *  • computeSpacing(c, e)  →  inter-axis spacing d = c√3/2 + 3e/2
+ *    The +3e/2 compensates for thickness so that the INNER side = c.
+ *    (3e/2 not e because the inner triangle vertex is the intersection
+ *    of 2 inner edges at 60°, which amplifies the offset.)
+ *
+ *  • computeOriginOffset(e)  →  automatic origin shift
+ *    The inner vertex of the first triangle (top-left) is at
+ *    (e√3/2, e/2) when axes pass through the origin.
+ *    We shift by (−e√3/2, −e/2) so that vertex coincides with (0,0).
+ *
+ *  • generateFamily(angle, d, L, H, shiftX, shiftY)
+ *    Generates all lines of a family (spacing d, direction angle°)
+ *    that intersect the rectangle [0,0]→[L,H].
+ *    Each line is clipped by Cohen-Sutherland.
+ * ══════════════════════════════════════════════════════════════════ */
+function computeSpacing(c, e) {
+  // d = c × √3/2 + 3e/2  →  perpendicular distance between axes.
+  // The inner triangle height is d − 3e/2 (not d − e) because
+  // the opposite vertex is the intersection of 2 inner edges at 60°,
+  // which amplifies the vertical offset: e instead of e/2.
+  return c * SQRT3 / 2 + 3 * e / 2;
+}
+
+function computeOriginOffset(e) {
+  // Automatic shift so the inner vertex of the first triangle
+  // (top-left) coincides with the origin (0, 0).
+  //
+  // Without a shift, all 3 family axes pass through (0,0).
+  // The inner edge of horizontal line 0 is at y = e/2.
+  // The inner edge of the +60° diagonal (index 0) is offset by e/2
+  // perpendicularly toward the triangle interior.
+  // Their intersection (= inner vertex) falls at (e√3/2, e/2).
+  // We therefore apply dx = −e√3/2, dy = −e/2.
+  return { dx: -e * SQRT3 / 2, dy: -e / 2 };
+}
+
+/**
+ * Generates all lines of a parallel family.
+ *
+ * @param {number} angle  - Line direction (degrees). 0° = horizontal.
+ * @param {number} d      - Perpendicular spacing between axes (mm).
+ * @param {number} L      - Rectangle width (mm).
+ * @param {number} H      - Rectangle height (mm).
+ * @param {number} shiftX - Horizontal origin offset (mm).
+ * @param {number} shiftY - Vertical origin offset (mm).
+ * @returns {Array<{x1,y1,x2,y2,index}>} Segments clipped to the rectangle.
+ *
+ * Algorithm:
+ *  1. Compute direction vector (dx,dy) and normal (nx,ny).
+ *  2. Project the 4 rectangle corners onto the normal to find
+ *     the index range [i0, i1] of visible lines.
+ *  3. For each index i, compute the base point on line i,
+ *     extend far in both directions, then clip to the rectangle.
+ *  4. Extend each clipped endpoint past the rectangle edge so
+ *     the butt cap (flat stroke end) fully clears the edge:
+ *     one cap corner touches the edge, the other is outside.
+ */
+function generateFamily(angle, d, L, H, shiftX, shiftY, e) {
+  const rad = angle * Math.PI / 180;
+  const dx = Math.cos(rad), dy = Math.sin(rad);   // direction vector
+  const nx = -dy, ny = dx;                         // normal vector
+
+  // Extensions so the butt cap protrudes past the rectangle edge.
+  // Vertical border  : δv = (e/2) × |tan θ|  (0 for horizontals)
+  // Horizontal border: δh = (e/2) / |tan θ|  (0 for horizontals)
+  const absCos = Math.abs(dx), absSin = Math.abs(dy);
+  const extVert  = absCos > 1e-10 ? (e / 2) * absSin / absCos : 0;
+  const extHoriz = absSin > 1e-10 ? (e / 2) * absCos / absSin : 0;
+
+  // Project the 4 corners onto the normal → index range.
+  // Expand by ±e/2 to capture candidates whose thickness overlaps
+  // the rectangle, then filter tangencies (see below).
+  const corners = [[0,0],[L,0],[L,H],[0,H]];
+  let pMin = Infinity, pMax = -Infinity;
+  for (const [cx, cy] of corners) {
+    const p = (cx - shiftX) * nx + (cy - shiftY) * ny;
+    if (p < pMin) pMin = p;
+    if (p > pMax) pMax = p;
+  }
+  const i0 = Math.ceil((pMin - e / 2) / d);
+  const i1 = Math.floor((pMax + e / 2) / d);
+
+  const lines = [];
+  const big = Math.max(L, H) * 2; // half-length for extension
+  const EPS = 0.01;
+  for (let i = i0; i <= i1; i++) {
+    const p = i * d;                                  // perpendicular position
+
+    // Exclude lines whose thickness merely touches the rectangle
+    // without overlapping (tangent). The band [p−e/2, p+e/2]
+    // must STRICTLY overlap [pMin, pMax].
+    if (p + e / 2 <= pMin + EPS || p - e / 2 >= pMax - EPS) continue;
+
+    const bx = shiftX + p * nx, by = shiftY + p * ny; // base point
+
+    // First clip to the exact rectangle [0,0]→[L,H]
+    const cl = clipLine(bx - dx * big, by - dy * big,
+                        bx + dx * big, by + dy * big,
+                        0, 0, L, H);
+
+    if (cl) {
+      // Normal case: axis crosses the rectangle → apply butt cap extensions
+      let ux = cl.x2 - cl.x1, uy = cl.y2 - cl.y1;
+      const len = Math.sqrt(ux * ux + uy * uy);
+      if (len < EPS) continue;
+      ux /= len; uy /= len;
+
+      let ext1 = 0;
+      if (cl.x1 < EPS || Math.abs(cl.x1 - L) < EPS) ext1 = extVert;
+      if (cl.y1 < EPS || Math.abs(cl.y1 - H) < EPS) ext1 = Math.max(ext1, extHoriz);
+
+      let ext2 = 0;
+      if (cl.x2 < EPS || Math.abs(cl.x2 - L) < EPS) ext2 = extVert;
+      if (cl.y2 < EPS || Math.abs(cl.y2 - H) < EPS) ext2 = Math.max(ext2, extHoriz);
+
+      lines.push({
+        x1: cl.x1 - ext1 * ux, y1: cl.y1 - ext1 * uy,
+        x2: cl.x2 + ext2 * ux, y2: cl.y2 + ext2 * uy,
+        index: i
+      });
+    } else {
+      // Axis is outside the exact rectangle but thickness overlaps
+      // (tangencies already excluded above).
+      // Clip to the expanded rectangle to get the visible segment.
+      const halfE = e / 2;
+      const cl2 = clipLine(bx - dx * big, by - dy * big,
+                           bx + dx * big, by + dy * big,
+                           -halfE, -halfE, L + halfE, H + halfE);
+      if (cl2) {
+        lines.push({ x1: cl2.x1, y1: cl2.y1, x2: cl2.x2, y2: cl2.y2, index: i });
+      }
+    }
+  }
+  return lines;
+}
+
+/* The 3 line families that make up the mesh.
+ * +60° and −60° are the two diagonals, 0° the horizontals.
+ * Colours: red / green / blue for visual distinction. */
+const FAMILIES = [
+  { name: 'Diag +60°', angle: 60,  color: '#e74c3c' },
+  { name: 'Diag −60°', angle: -60, color: '#2ecc71' },
+  { name: 'Horiz 0°',  angle: 0,   color: '#3498db' },
+];
+
+/* ══════════════════════════════════════════════════════════════════
+ *  Dimension annotations (rectangle size overlay)
+ *  ────────────────────────────────────────────────
+ *  Shown when the user hovers or focuses the Rectangle controls.
+ *  Draws dimension lines with extension lines, end-ticks, and
+ *  centered text (with a white halo via paint-order: stroke).
+ *  The vertical label is rotated −90° for readability.
+ * ══════════════════════════════════════════════════════════════════ */
+let dimsVisible = false;
+
+function dimLine(g, x1, y1, x2, y2, color, sw, op) {
+  const l = document.createElementNS(SVGNS, 'line');
+  l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+  l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+  l.setAttribute('stroke', color); l.setAttribute('stroke-width', sw);
+  if (op < 1) l.setAttribute('stroke-opacity', op);
+  g.appendChild(l);
+}
+
+function dimText(x, y, label, fs, color, rot) {
+  const t = document.createElementNS(SVGNS, 'text');
+  t.setAttribute('text-anchor', 'middle');
+  t.setAttribute('dominant-baseline', 'central');
+  t.setAttribute('font-size', fs);
+  t.setAttribute('fill', color);
+  t.setAttribute('stroke', '#ffffff');
+  t.setAttribute('stroke-width', fs * 0.3);
+  t.setAttribute('paint-order', 'stroke');
+  t.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif');
+  t.setAttribute('font-weight', '600');
+  if (rot) t.setAttribute('transform', `translate(${x},${y}) rotate(${rot})`);
+  else { t.setAttribute('x', x); t.setAttribute('y', y); }
+  t.textContent = label;
+  return t;
+}
+
+function buildDimAnnotations(L, H) {
+  const g = document.createElementNS(SVGNS, 'g');
+  g.setAttribute('id', 'dimAnnotations');
+  if (dimsVisible || rectGaugeEnabled) g.classList.add('show');
+
+  const s  = Math.max(L, H);
+  const gp = s * 0.032;           // gap from edge to dimension line
+  const tk = s * 0.010;           // tick half-length
+  const lw = s * 0.0018;          // line width
+  const fs = s * 0.022;           // font size
+  const c  = '#00d4ff';
+
+  // ── Width (horizontal, below rectangle) ──
+  const hY = H + gp;
+  dimLine(g, 0, H + lw * 2, 0, hY + tk, c, lw, 0.4);        // left extension
+  dimLine(g, L, H + lw * 2, L, hY + tk, c, lw, 0.4);        // right extension
+  dimLine(g, 0, hY, L, hY, c, lw, 0.7);                     // dimension line
+  dimLine(g, 0, hY - tk, 0, hY + tk, c, lw * 1.3, 0.7);    // left tick
+  dimLine(g, L, hY - tk, L, hY + tk, c, lw * 1.3, 0.7);    // right tick
+  g.appendChild(dimText(L / 2, hY, `${L} mm`, fs, c));
+
+  // ── Height (vertical, left of rectangle) ──
+  const vX = -gp;
+  dimLine(g, -lw * 2, 0, vX - tk, 0, c, lw, 0.4);           // top extension
+  dimLine(g, -lw * 2, H, vX - tk, H, c, lw, 0.4);           // bottom extension
+  dimLine(g, vX, 0, vX, H, c, lw, 0.7);                     // dimension line
+  dimLine(g, vX - tk, 0, vX + tk, 0, c, lw * 1.3, 0.7);    // top tick
+  dimLine(g, vX - tk, H, vX + tk, H, c, lw * 1.3, 0.7);    // bottom tick
+  g.appendChild(dimText(vX, H / 2, `${H} mm`, fs, c, -90));
+
+  return g;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ *  Mesh dimension annotations (edge length + stroke width)
+ *  ─────────────────────────────────────────────────────────────────
+ *  Shown when the user hovers or focuses the Mesh controls.
+ *  • Edge length: precise gauge on the inner triangle side,
+ *    placed above the rectangle at a safe offset from the height
+ *    dimension. Ticks land on the inner edges (not axes).
+ *  • Stroke width: shown on the first +60° diagonal through the
+ *    origin, extended well outside the rectangle with thin border
+ *    lines at ±e/2, a perpendicular indicator, and a horizontal label.
+ * ══════════════════════════════════════════════════════════════════ */
+let meshDimsVisible = false;
+
+function buildMeshDimAnnotations(allFamilies, d, c, e, L, H, strokeW, shift) {
+  const g = document.createElementNS(SVGNS, 'g');
+  g.setAttribute('id', 'meshDimAnnotations');
+  if (meshDimsVisible || meshGaugeEnabled) g.classList.add('show');
+
+  const s  = Math.max(L, H);
+  const col = '#ffaa00';
+
+  if (d <= 0) return g;
+
+  // ── Edge length (precise inner-triangle gauge, above rectangle) ──
+  // The inner triangle side = c sits between inner edges of the lines.
+  // The first inner vertex (top-left of the first triangle) is at (0,0)
+  // when auto-offset is applied, i.e. (shift.dx + e√3/2, shift.dy + e/2).
+  // We compute the two horizontal endpoints of the first inner triangle side:
+  //   Vertex A: inner intersection of horiz-0 and diag+60° → at y = shift.dy + e/2
+  //   Vertex B: A + (c, 0) along the horizontal inner edge
+  {
+    const lwE = s * 0.0008;           // very thin
+    const fsE = s * 0.016;
+    const tkE = s * 0.005;
+
+    // Inner vertex of first triangle (top-left corner)
+    // With auto offset: shift = (-e√3/2, -e/2) → inner vertex at (0, 0)
+    // In general: inner vertex = (shift.dx + e√3/2, shift.dy + e/2)
+    const ivX = shift.dx + e * SQRT3 / 2;
+    const ivY = shift.dy + e / 2;
+
+    // The first horizontal inner edge goes from ivX to ivX + c
+    const ex0 = ivX;
+    const ex1 = ivX + c;
+
+    if (ex1 <= L + c * 0.2 && ex0 >= -c * 0.2) {
+      // Place the dimension above the rectangle, well above the height dim
+      // Height dim sits at vX = -s*0.032, so place edge dim above that
+      const gp = s * 0.055;           // higher than the rect height dim
+      const dimY = -gp;
+
+      // Thin extension lines from just above rect top to dimension line
+      dimLine(g, ex0, Math.min(0, ivY), ex0, dimY - tkE, col, lwE, 0.25);
+      dimLine(g, ex1, Math.min(0, ivY), ex1, dimY - tkE, col, lwE, 0.25);
+      // Dimension line
+      dimLine(g, ex0, dimY, ex1, dimY, col, lwE, 0.35);
+      // Ticks
+      dimLine(g, ex0, dimY - tkE, ex0, dimY + tkE, col, lwE, 0.4);
+      dimLine(g, ex1, dimY - tkE, ex1, dimY + tkE, col, lwE, 0.4);
+      // Label
+      g.appendChild(dimText((ex0 + ex1) / 2, dimY, `c = ${c} mm`, fsE, col));
+    }
+  }
+
+  // ── Stroke width (on first +60° diagonal through origin) ──
+  if (e > 0) {
+    const lwS = s * 0.0007;          // very thin for precision
+    const fsS = s * 0.015;
+    const diagLines = allFamilies[0].lines;  // Diag +60°
+    let dLine = diagLines.find(l => l.index === 0);
+    if (!dLine && diagLines.length > 0) {
+      dLine = diagLines.reduce((a, b) => Math.abs(a.index) <= Math.abs(b.index) ? a : b);
+    }
+    if (dLine) {
+      // +60° direction & normal
+      const rad60 = 60 * Math.PI / 180;
+      const ddx = Math.cos(rad60), ddy = Math.sin(rad60);   // (0.5, 0.866)
+      const nnx = -ddy, nny = ddx;                           // normal (-0.866, 0.5)
+      const upX = -nnx, upY = -nny;                           // (0.866, -0.5)
+
+      // Extend well before the upper endpoint, outside the rectangle
+      const upper = (dLine.y1 <= dLine.y2)
+        ? { x: dLine.x1, y: dLine.y1 }
+        : { x: dLine.x2, y: dLine.y2 };
+      const extLen = Math.max(e * 12, s * 0.065);
+      const ex2x = upper.x, ex2y = upper.y;
+      const ex1x = ex2x - ddx * extLen;
+      const ex1y = ex2y - ddy * extLen;
+      const midX = (ex1x + ex2x) / 2;
+      const midY = (ex1y + ex2y) / 2;
+
+      // Faded thick line (family color)
+      const thickLine = document.createElementNS(SVGNS, 'line');
+      thickLine.setAttribute('x1', ex1x); thickLine.setAttribute('y1', ex1y);
+      thickLine.setAttribute('x2', ex2x); thickLine.setAttribute('y2', ex2y);
+      thickLine.setAttribute('stroke', allFamilies[0].color);
+      thickLine.setAttribute('stroke-width', strokeW);
+      thickLine.setAttribute('stroke-linecap', 'butt');
+      thickLine.setAttribute('stroke-opacity', '0.30');
+      g.appendChild(thickLine);
+
+      // Border lines at ±e/2 perpendicular to the diagonal
+      for (const sign of [-1, 1]) {
+        const ox = sign * (e / 2) * nnx;
+        const oy = sign * (e / 2) * nny;
+        dimLine(g, ex1x + ox, ex1y + oy, ex2x + ox, ex2y + oy, col, lwS, 0.25);
+      }
+
+      // Perpendicular indicator between borders (with small overshoot)
+      const overshoot = Math.max(e * 0.5, s * 0.005);
+      const pAx = midX + (e / 2 + overshoot) * upX;
+      const pAy = midY + (e / 2 + overshoot) * upY;
+      const pBx = midX - (e / 2 + overshoot) * upX;
+      const pBy = midY - (e / 2 + overshoot) * upY;
+      dimLine(g, pAx, pAy, pBx, pBy, col, lwS * 1.4, 0.4);
+
+      // Ticks at border crossings
+      const tk2 = s * 0.0025;
+      for (const sign of [-1, 1]) {
+        const bx = midX + sign * (e / 2) * upX;
+        const by = midY + sign * (e / 2) * upY;
+        dimLine(g, bx - ddx * tk2, by - ddy * tk2, bx + ddx * tk2, by + ddy * tk2, col, lwS * 1.2, 0.35);
+      }
+
+      // Label — horizontal text, placed above the diagonal
+      const labelDist = e / 2 + overshoot + fsS * 0.8;
+      const labelX = midX + labelDist * upX;
+      const labelY = midY + labelDist * upY;
+      g.appendChild(dimText(labelX, labelY, `e = ${e} mm`, fsS, col));
+    }
+  }
+
+  return g;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ *  Export SVG / DXF
+ * ══════════════════════════════════════════════════════════════════ */
+
+/**
+ * Returns the current origin offset from the dx/dy input fields.
+ */
+function getOriginOffset() {
+  return { dx: parseFloat(inputDx.value) || 0, dy: parseFloat(inputDy.value) || 0 };
+}
+
+/**
+ * Sets dx/dy fields to the auto-calculated offset and redraws.
+ */
+function applyAutoOffset() {
+  const e = parseFloat(inputE.value) || 0;
+  const auto = computeOriginOffset(e);
+  inputDx.value = parseFloat(auto.dx.toFixed(4));
+  inputDy.value = parseFloat(auto.dy.toFixed(4));
+  draw();
+}
+
+function buildExportData() {
+  const L = parseFloat(inputL.value) || 100;
+  const H = parseFloat(inputH.value) || 80;
+  const c = parseFloat(inputC.value) || 10;
+  const e = parseFloat(inputE.value) || 0;
+  const d = computeSpacing(c, e);
+  const shift = getOriginOffset();
+  const strokeW = e > 0 ? e : Math.max(L, H) * 0.003;
+  const trimRight = trimRightEnabled ? computeTrimRight(d, shift, e, L) : null;
+  const trimBottom = trimBottomEnabled ? computeTrimBottom(d, shift, e, H) : null;
+  const clipRight = trimRight ? trimRight.xLeftEdge : L;
+  const clipBottom = trimBottom ? trimBottom.yTopEdge : H;
+  const families = FAMILIES.map(fam => ({
+    ...fam,
+    lines: generateFamily(fam.angle, d, clipRight, clipBottom, shift.dx, shift.dy, e)
+  }));
+  return { L, H, c, e, d, strokeW, families, shift, trimRight, trimBottom };
+}
+
+function exportSVG() {
+  const { L, H, strokeW, families, trimRight, trimBottom } = buildExportData();
+  const margin = Math.max(L, H) * 0.02;
+  const now = new Date();
+  const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+'h'+String(now.getMinutes()).padStart(2,'0');
+  let lines = [];
+  lines.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+  lines.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-margin} ${-margin} ${L+2*margin} ${H+2*margin}" width="${L+2*margin}mm" height="${H+2*margin}mm">`);
+  // Rectangle
+  lines.push(`  <rect x="0" y="0" width="${L}" height="${H}" fill="none" stroke="#000" stroke-width="0.5"/>`);
+  // Families
+  for (const fam of families) {
+    const col = blackLinesEnabled ? '#000000' : fam.color;
+    lines.push(`  <g stroke="${col}" stroke-width="${strokeW}" stroke-linecap="butt">`);
+    for (const seg of fam.lines) {
+      lines.push(`    <line x1="${seg.x1.toFixed(4)}" y1="${seg.y1.toFixed(4)}" x2="${seg.x2.toFixed(4)}" y2="${seg.y2.toFixed(4)}"/>`);
+    }
+    lines.push(`  </g>`);
+  }
+  // Trim right — vertical line
+  if (trimRight) {
+    const y2 = trimBottom ? trimBottom.yTopEdge : H;
+    const trimCol = blackLinesEnabled ? '#000000' : '#ff44ff';
+    lines.push(`  <line x1="${trimRight.xCenter.toFixed(4)}" y1="0" x2="${trimRight.xCenter.toFixed(4)}" y2="${y2}" stroke="${trimCol}" stroke-width="${strokeW}" stroke-linecap="butt"/>`);
+  }
+  // Trim bottom — horizontal line
+  if (trimBottom) {
+    const x2 = trimRight ? trimRight.xLeftEdge : L;
+    const trimColB = blackLinesEnabled ? '#000000' : '#ff44ff';
+    lines.push(`  <line x1="0" y1="${trimBottom.yCenter.toFixed(4)}" x2="${x2}" y2="${trimBottom.yCenter.toFixed(4)}" stroke="${trimColB}" stroke-width="${strokeW}" stroke-linecap="butt"/>`);
+  }
+  lines.push(`</svg>`);
+  downloadFile(`triangle-mesh_${ts}.svg`, lines.join('\n'), 'image/svg+xml');
+}
+
+function exportDXF() {
+  const { L, H, strokeW, families, trimRight, trimBottom } = buildExportData();
+  const dxf = [];
+  // Header minimal
+  dxf.push('0','SECTION','2','HEADER');
+  dxf.push('9','$INSUNITS','70','4'); // 4 = millimeters
+  dxf.push('0','ENDSEC');
+  // Tables (layers) — ASCII names for maximum CAD compatibility
+  const dxfLayerMap = { 'Diag +60\u00b0': 'DIAG_PLUS60', 'Diag \u221260\u00b0': 'DIAG_MINUS60', 'Horiz 0\u00b0': 'HORIZ_0' };
+  const dxfLayerColor = blackLinesEnabled
+    ? { 'DIAG_PLUS60': 7, 'DIAG_MINUS60': 7, 'HORIZ_0': 7 }
+    : { 'DIAG_PLUS60': 1, 'DIAG_MINUS60': 3, 'HORIZ_0': 5 };
+  dxf.push('0','SECTION','2','TABLES');
+  const layerCount = 4 + (trimRight ? 1 : 0) + (trimBottom ? 1 : 0);
+  dxf.push('0','TABLE','2','LAYER','70',String(layerCount));
+  dxf.push('0','LAYER','2','RECTANGLE','70','0','62','7','6','CONTINUOUS');
+  for (const fam of families) {
+    const ln = dxfLayerMap[fam.name] || fam.name;
+    dxf.push('0','LAYER','2',ln,'70','0','62',String(dxfLayerColor[ln]||7),'6','CONTINUOUS');
+  }
+  if (trimRight) {
+    const trimDxfColor = blackLinesEnabled ? '7' : '6';
+    dxf.push('0','LAYER','2','TRIM_RIGHT','70','0','62',trimDxfColor,'6','CONTINUOUS');
+  }
+  if (trimBottom) {
+    const trimDxfColor = blackLinesEnabled ? '7' : '6';
+    dxf.push('0','LAYER','2','TRIM_BOTTOM','70','0','62',trimDxfColor,'6','CONTINUOUS');
+  }
+  dxf.push('0','ENDTAB');
+  dxf.push('0','ENDSEC');
+  // Entities
+  dxf.push('0','SECTION','2','ENTITIES');
+  // Rectangle (4 lines) — Y inverted: DXF Y-up vs SVG Y-down → dxfY = H − svgY
+  const rc = [[0,0,L,0],[L,0,L,H],[L,H,0,H],[0,H,0,0]];
+  for (const [x1,y1,x2,y2] of rc) {
+    dxf.push('0','LINE','8','RECTANGLE');
+    dxf.push('10',x1.toFixed(4),'20',(H-y1).toFixed(4),'30','0.0');
+    dxf.push('11',x2.toFixed(4),'21',(H-y2).toFixed(4),'31','0.0');
+  }
+  // Families — same Y inversion
+  for (const fam of families) {
+    const ln = dxfLayerMap[fam.name] || fam.name;
+    for (const seg of fam.lines) {
+      dxf.push('0','LINE','8',ln);
+      dxf.push('10',seg.x1.toFixed(4),'20',(H-seg.y1).toFixed(4),'30','0.0');
+      dxf.push('11',seg.x2.toFixed(4),'21',(H-seg.y2).toFixed(4),'31','0.0');
+    }
+  }
+  // Trim right — vertical line
+  if (trimRight) {
+    const y2 = trimBottom ? trimBottom.yTopEdge : H;
+    dxf.push('0','LINE','8','TRIM_RIGHT');
+    dxf.push('10',trimRight.xCenter.toFixed(4),'20',(H-0).toFixed(4),'30','0.0');
+    dxf.push('11',trimRight.xCenter.toFixed(4),'21',(H-y2).toFixed(4),'31','0.0');
+  }
+  // Trim bottom — horizontal line
+  if (trimBottom) {
+    const x2 = trimRight ? trimRight.xLeftEdge : L;
+    dxf.push('0','LINE','8','TRIM_BOTTOM');
+    dxf.push('10','0.0','20',(H-trimBottom.yCenter).toFixed(4),'30','0.0');
+    dxf.push('11',x2.toFixed(4),'21',(H-trimBottom.yCenter).toFixed(4),'31','0.0');
+  }
+  dxf.push('0','ENDSEC','0','EOF');
+  const now = new Date();
+  const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+'h'+String(now.getMinutes()).padStart(2,'0');
+  downloadFile(`triangle-mesh_${ts}.dxf`, dxf.join('\n'), 'application/dxf');
+}
+
+function downloadFile(name, content, mime) {
+  const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ *  Main draw function
+ *  ───────────────────
+ *  Reads parameters (L, H, c, e), recomputes spacing d,
+ *  generates the 3 line families, clips them, and injects them into
+ *  the SVG as <line> elements. Also adds the origin marker and
+ *  updates the info bar.
+ *
+ *  SVG stroke-width is set to "e" when e > 0, which visually
+ *  reproduces the real physical thickness.
+ * ══════════════════════════════════════════════════════════════════ */
+let trimRightEnabled = false;
+let trimBottomEnabled = false;
+let rectGaugeEnabled = false;
+let meshGaugeEnabled = false;
+let blackLinesEnabled = false;
+let firstDraw = true;
+
+/* ── Trim Right (vertical) line computation ──
+ *  Grid of diagonal-axis crossings: shift.dx + k × halfStep.
+ *  The first crossing inside the rectangle is at firstCrossingX.
+ *  For perfect mirror symmetry with the first partial triangle,
+ *  the trim left edge must be the SAME distance past the last
+ *  crossing as x = 0 is before the first crossing.
+ *  xCenter = xLeftEdge + e/2  (left border is the real separator).
+ */
+function computeTrimRight(d, shift, e, L) {
+  if (e <= 0 || d <= 0) return null;
+  const sideAxis = 2 * d / SQRT3;
+  const halfStep = sideAxis / 2;
+
+  // First grid crossing at or past x = 0
+  const kFirst = Math.ceil(-shift.dx / halfStep);
+  const firstCrossingX = shift.dx + kFirst * halfStep;
+  // Mirror offset = distance from rect left edge to first crossing
+  const mirrorOffset = firstCrossingX;   // always ≥ 0
+
+  // Last crossing such that lastCrossing + mirrorOffset + e ≤ L
+  const m = Math.floor((L - firstCrossingX - mirrorOffset - e) / halfStep);
+  if (m < 0) return null;
+
+  const xLeftEdge = firstCrossingX + m * halfStep + mirrorOffset;
+  const xCenter = xLeftEdge + e / 2;
+  const nFull = Math.floor(m / 2);
+  const isHalf = (m % 2) === 1;
+  return { xCenter, xLeftEdge, nSteps: m, nFull, isHalf, halfStep, sideAxis };
+}
+
+/* ── Trim Bottom (horizontal) line computation ──
+ *  The trim sits on the LAST horizontal-line axis that fits
+ *  inside the rectangle (y + e/2 ≤ H).
+ *  Horizontal-line axes: shift.dy + k × d.
+ *  yCenter = last axis  →  yTopEdge = yCenter − e/2 (clip boundary).
+ */
+function computeTrimBottom(d, shift, e, H) {
+  if (e <= 0 || d <= 0) return null;
+
+  // Horizontal-line axes sit at  y = shift.dy + k × d.
+  // Find the last axis whose bottom stroke edge (y + e/2) fits inside H.
+  const step = d;
+  const kLast = Math.floor((H - e / 2 - shift.dy) / step);
+  if (kLast < 0) return null;
+
+  const yCenter  = shift.dy + kLast * step;   // axis of the last horiz. line
+  const yTopEdge = yCenter - e / 2;            // mesh is clipped here
+  if (yTopEdge < 0) return null;
+
+  return { yCenter, yTopEdge, nSteps: kLast, step };
+}
+
+function draw() {
+  const L = parseFloat(inputL.value) || 100;
+  const H = parseFloat(inputH.value) || 80;
+  const c = parseFloat(inputC.value) || 10;
+  const e = parseFloat(inputE.value) || 0;
+  rectL = L; rectH = H;
+
+  const d = computeSpacing(c, e);            // inter-axis spacing (mm)
+  const shift = getOriginOffset();             // offset from dx/dy fields
+
+  // Clear the SVG before redrawing
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  // Outline rectangle [0,0]→[L,H]. non-scaling-stroke = always 1px on screen.
+  const rect = document.createElementNS(SVGNS, 'rect');
+  rect.setAttribute('x', 0);
+  rect.setAttribute('y', 0);
+  rect.setAttribute('width', L);
+  rect.setAttribute('height', H);
+  rect.setAttribute('fill', 'none');
+  rect.setAttribute('stroke', '#000000');
+  rect.setAttribute('stroke-width', '1');
+  rect.classList.add('rect-outline');
+  svg.appendChild(rect);
+
+  // Compute trim lines (if enabled) before generating families,
+  // so mesh lines can be clipped to the trim boundaries.
+  const trimRightData = trimRightEnabled ? computeTrimRight(d, shift, e, L) : null;
+  const trimBottomData = trimBottomEnabled ? computeTrimBottom(d, shift, e, H) : null;
+  const clipRight = trimRightData ? trimRightData.xLeftEdge : L;
+  const clipBottom = trimBottomData ? trimBottomData.yTopEdge : H;
+
+  // Generate the 3 clipped line families with butt cap endpoint extensions.
+  const allFamilies = FAMILIES.map(fam => ({
+    ...fam,
+    lines: generateFamily(fam.angle, d, clipRight, clipBottom, shift.dx, shift.dy, e)
+  }));
+
+  // Stroke width: use actual thickness in mm when e > 0;
+  // otherwise a thin proportional line for visualisation.
+  const strokeW = e > 0 ? e : Math.max(L, H) * 0.003;
+
+  for (const fam of allFamilies) {
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('data-family', fam.name);
+    g.setAttribute('stroke', blackLinesEnabled ? '#000000' : fam.color);
+    g.setAttribute('stroke-width', strokeW);
+    g.setAttribute('stroke-linecap', 'butt');
+    for (const seg of fam.lines) {
+      const line = document.createElementNS(SVGNS, 'line');
+      line.setAttribute('x1', seg.x1.toFixed(4));
+      line.setAttribute('y1', seg.y1.toFixed(4));
+      line.setAttribute('x2', seg.x2.toFixed(4));
+      line.setAttribute('y2', seg.y2.toFixed(4));
+      line.setAttribute('data-index', seg.index);
+      line.classList.add('pattern');
+      g.appendChild(line);
+    }
+    svg.appendChild(g);
+  }
+
+  // Trim right — vertical line (when toggled on)
+  if (trimRightData) {
+    const cutLine = document.createElementNS(SVGNS, 'line');
+    cutLine.setAttribute('x1', trimRightData.xCenter.toFixed(4));
+    cutLine.setAttribute('y1', '0');
+    cutLine.setAttribute('x2', trimRightData.xCenter.toFixed(4));
+    cutLine.setAttribute('y2', (trimBottomData ? trimBottomData.yTopEdge : H).toFixed(4));
+    cutLine.setAttribute('stroke', blackLinesEnabled ? '#000000' : '#ff44ff');
+    cutLine.setAttribute('stroke-width', strokeW);
+    cutLine.setAttribute('stroke-linecap', 'butt');
+    cutLine.classList.add('pattern');
+    svg.appendChild(cutLine);
+  }
+
+  // Trim bottom — horizontal line (when toggled on)
+  if (trimBottomData) {
+    const cutLine = document.createElementNS(SVGNS, 'line');
+    cutLine.setAttribute('x1', '0');
+    cutLine.setAttribute('y1', trimBottomData.yCenter.toFixed(4));
+    cutLine.setAttribute('x2', (trimRightData ? trimRightData.xLeftEdge : L).toFixed(4));
+    cutLine.setAttribute('y2', trimBottomData.yCenter.toFixed(4));
+    cutLine.setAttribute('stroke', blackLinesEnabled ? '#000000' : '#ff44ff');
+    cutLine.setAttribute('stroke-width', strokeW);
+    cutLine.setAttribute('stroke-linecap', 'butt');
+    cutLine.classList.add('pattern');
+    svg.appendChild(cutLine);
+  }
+
+  // Origin marker: cyan circle + crosshair, placed outside the rectangle
+  // at −5% of max(L,H) so it does not interfere with the drawing.
+  const offset = Math.max(L, H) * 0.05;
+  const originX = -offset;
+  const originY = -offset;
+  const markerR = Math.max(L, H) * 0.008;
+  
+  const originCircle = document.createElementNS(SVGNS, 'circle');
+  originCircle.setAttribute('cx', originX);
+  originCircle.setAttribute('cy', originY);
+  originCircle.setAttribute('r', markerR);
+  originCircle.setAttribute('fill', 'none');
+  originCircle.setAttribute('stroke', '#00d4ff');
+  originCircle.setAttribute('stroke-width', markerR * 0.3);
+  svg.appendChild(originCircle);
+  
+  const crossSize = markerR * 2;
+  const originCross = document.createElementNS(SVGNS, 'g');
+  originCross.setAttribute('stroke', '#00d4ff');
+  originCross.setAttribute('stroke-width', markerR * 0.25);
+  const crossH = document.createElementNS(SVGNS, 'line');
+  crossH.setAttribute('x1', originX - crossSize);
+  crossH.setAttribute('y1', originY);
+  crossH.setAttribute('x2', originX + crossSize);
+  crossH.setAttribute('y2', originY);
+  originCross.appendChild(crossH);
+  const crossV = document.createElementNS(SVGNS, 'line');
+  crossV.setAttribute('x1', originX);
+  crossV.setAttribute('y1', originY - crossSize);
+  crossV.setAttribute('x2', originX);
+  crossV.setAttribute('y2', originY + crossSize);
+  originCross.appendChild(crossV);
+  svg.appendChild(originCross);
+
+  // Dimension annotations
+  svg.appendChild(buildDimAnnotations(L, H));
+  svg.appendChild(buildMeshDimAnnotations(allFamilies, d, c, e, L, H, strokeW, shift));
+
+  if (firstDraw) { firstDraw = false; fitAll(); }
+  else applyViewBox();
+
+  // ── Info bar ──
+  // sectHoriz = horizontal cross-section at diagonal intersection = 2e/√3
+  // innerHeight = inner triangle height = c × √3/2
+  const sectHoriz = 2 * e / SQRT3;
+  const hauteurInt = c * SQRT3 / 2;
+  let total = 0;
+  let info = `<strong>Rect:</strong> ${L}×${H} mm &nbsp;|&nbsp; `;
+  info += `<strong>c =</strong> ${c} mm &nbsp;|&nbsp; `;
+  info += `<strong>e =</strong> ${e} mm &nbsp;|&nbsp; `;
+  info += `<span class="computed"><strong>d =</strong> ${d.toFixed(3)} mm</span> &nbsp;|&nbsp; `;
+  info += `<span class="computed">h_int = ${hauteurInt.toFixed(3)}</span> &nbsp;|&nbsp; `;
+  info += `<span class="computed">sect.h = ${sectHoriz.toFixed(3)}</span> &nbsp;|&nbsp; `;
+  info += `<span class="computed">offset = (${shift.dx.toFixed(2)}, ${shift.dy.toFixed(2)})</span>`;
+  info += `<br>`;
+  for (const fam of allFamilies) {
+    const legendCol = blackLinesEnabled ? '#000' : fam.color;
+    info += `<span class="legend" style="background:${legendCol}"></span>${fam.name}: <strong>${fam.lines.length}</strong> &nbsp;&nbsp;`;
+    total += fam.lines.length;
+  }
+  info += `&nbsp;|&nbsp; <strong>Total: ${total}</strong>`;
+  if (trimRightData) {
+    info += ` &nbsp;|&nbsp; <span class="computed">✂R x = ${trimRightData.xLeftEdge.toFixed(2)} mm (${trimRightData.nFull}${trimRightData.isHalf ? ' + ½' : ''} △)</span>`;
+  }
+  if (trimBottomData) {
+    info += ` &nbsp;|&nbsp; <span class="computed">✂B y = ${trimBottomData.yTopEdge.toFixed(2)} mm (${trimBottomData.nSteps} rows)</span>`;
+  }
+  infoPanel.innerHTML = info;
+}
+
+/* ── Update events ──
+ * Input listeners trigger draw() and optionally fitAll().
+ * L/H changes refit because the drawing area changes.
+ * c/e changes only redraw (same area, different pattern). */
+// L and H: redraw AND refit (the drawing area changes)
+inputL.addEventListener('input', () => { draw(); fitAll(); });
+inputH.addEventListener('input', () => { draw(); fitAll(); });
+// c, e: redraw only (the area does not change)
+inputC.addEventListener('input', draw);
+inputE.addEventListener('input', draw);
+
+// Offset controls: Auto calculates (−e√3/2, −e/2), No sets (0, 0)
+offsetAutoBtn.addEventListener('click', applyAutoOffset);
+offsetZeroBtn.addEventListener('click', () => {
+  inputDx.value = 0;
+  inputDy.value = 0;
+  draw();
+});
+inputDx.addEventListener('input', draw);
+inputDy.addEventListener('input', draw);
+
+// Trim toggles: each button toggles its state and visual active class
+trimRightBtn.addEventListener('click', () => {
+  trimRightEnabled = !trimRightEnabled;
+  trimRightBtn.classList.toggle('active', trimRightEnabled);
+  draw();
+});
+trimBottomBtn.addEventListener('click', () => {
+  trimBottomEnabled = !trimBottomEnabled;
+  trimBottomBtn.classList.toggle('active', trimBottomEnabled);
+  draw();
+});
+rectGaugeBtn.addEventListener('click', () => {
+  rectGaugeEnabled = !rectGaugeEnabled;
+  rectGaugeBtn.classList.toggle('active', rectGaugeEnabled);
+  draw();
+});
+meshGaugeBtn.addEventListener('click', () => {
+  meshGaugeEnabled = !meshGaugeEnabled;
+  meshGaugeBtn.classList.toggle('active', meshGaugeEnabled);
+  draw();
+});
+blackLinesBtn.addEventListener('click', () => {
+  blackLinesEnabled = !blackLinesEnabled;
+  blackLinesBtn.classList.toggle('active', blackLinesEnabled);
+  draw();
+});
+
+// Dimension annotations: show on hover/focus of section containers.
+// Rectangle dims shown when hovering rectSection or focusing W/H inputs.
+// Mesh dims shown when hovering meshSection or focusing c/e inputs.
+const rectSection = document.getElementById('rectSection');
+const meshSection = document.getElementById('meshSection');
+
+let dimHover = false, dimFocus = false;
+function updateRectDims() {
+  dimsVisible = dimHover || dimFocus;
+  const el = document.getElementById('dimAnnotations');
+  if (el) el.classList.toggle('show', dimsVisible || rectGaugeEnabled);
+}
+
+rectSection.addEventListener('mouseenter', () => { dimHover = true; updateRectDims(); });
+rectSection.addEventListener('mouseleave', () => { dimHover = false; updateRectDims(); });
+[inputL, inputH].forEach(inp => {
+  inp.addEventListener('focus', () => { dimFocus = true; updateRectDims(); });
+  inp.addEventListener('blur',  () => { dimFocus = false; updateRectDims(); });
+});
+
+let meshHover = false, meshFocus = false;
+function updateMeshDims() {
+  meshDimsVisible = meshHover || meshFocus;
+  const el = document.getElementById('meshDimAnnotations');
+  if (el) el.classList.toggle('show', meshDimsVisible || meshGaugeEnabled);
+}
+meshSection.addEventListener('mouseenter', () => { meshHover = true; updateMeshDims(); });
+meshSection.addEventListener('mouseleave', () => { meshHover = false; updateMeshDims(); });
+[inputC, inputE].forEach(inp => {
+  inp.addEventListener('focus', () => { meshFocus = true; updateMeshDims(); });
+  inp.addEventListener('blur',  () => { meshFocus = false; updateMeshDims(); });
+});
+
+exportSvgBtn.addEventListener('click', exportSVG);
+exportDxfBtn.addEventListener('click', exportDXF);
+
+// Window resize: preserve current display mode (real-size recalculates,
+// otherwise just re-applies the current viewBox to update scale readout)
+window.addEventListener('resize', () => {
+  if (isRealSize) setRealSize();
+  else applyViewBox();
+});
+
+// ── Bootstrap: fill offset fields with auto values, then initial draw ──
+applyAutoOffset();
+</script>
+</body>
+</html>
+
